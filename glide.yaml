@@ -1,0 +1,12 @@
+package: github.com/jlindsey/mcserv
+import:
+- package: github.com/sirupsen/logrus
+  version: ^1.0.0
+- package: github.com/Sirupsen/logrus
+  repo: git@github.com:/sirupsen/logrus
+  vcs: git
+- package: github.com/jessevdk/go-flags
+  version: ~1.2.0
+testImport:
+- package: github.com/smartystreets/goconvey
+  version: ~1.6.2

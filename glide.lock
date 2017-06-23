@@ -1,0 +1,18 @@
+hash: 3576a0916f07c844584e3bff8526931a1f5ee23d5e4442df531bad446f511894
+updated: 2017-06-23T11:46:04.879397762-04:00
+imports:
+- name: github.com/jessevdk/go-flags
+  version: 48cf8722c3375517aba351d1f7577c40663a4407
+- name: github.com/sirupsen/logrus
+  version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
+- name: github.com/Sirupsen/logrus
+  version: 3d4380f53a34dcdc95f0c1db702615992b38d9a4
+  repo: git@github.com:/sirupsen/logrus
+  vcs: git
+- name: golang.org/x/sys
+  version: c23410a886927bab8ca5e80b08af6a56faeb330d
+  subpackages:
+  - unix
+testImports:
+- name: github.com/smartystreets/goconvey
+  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1

@@ -21,7 +21,4 @@ test: | vendor
 	go test
 	rm -f build/test
 
-run: ${SOURCES} | build vendor
-	go run $^
-
-.PHONY: all bin clean distclean test run
+.PHONY: all bin clean distclean test

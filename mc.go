@@ -19,27 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"github.com/jlindsey/mcserv/shared"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 )
 
-// Service is an instantiation of the shared.Service interface
-type Service int
+// MinecraftService implements the Service interface for the wrapped
+// MC server.
+type MinecraftService struct {
+	InputChan   chan string
+	OutputChan  chan string
+	OutputLines []string
+}
 
-// Ping is a simple command that checks connectivity
-func (s *Service) Ping(args *shared.PingArgs, ret *shared.Pong) error {
-	log.WithFields(log.Fields{
-		"func": "Ping",
-		"args": args,
-	}).Debug("Got RPC call")
-
-	ret.OK = true
-
-	log.WithFields(log.Fields{
-		"func": "Ping",
-		"args": args,
-		"ret":  ret,
-	}).Info("RPC call")
-
-	return nil
+func (mc *MinecraftService) String() string {
+	return fmt.Sprintf("MinecraftService{}")
 }

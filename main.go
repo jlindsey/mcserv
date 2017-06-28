@@ -1,36 +1,30 @@
 package main
 
 import (
-	"os"
-
-	"github.com/jessevdk/go-flags"
+	"github.com/jlindsey/mcserv/rpc"
 	log "github.com/sirupsen/logrus"
 )
 
-type options struct {
-	Verbose []bool `short:"v" long:"verbose" description:"increases logging verbosity"`
-
-	Args struct {
-		CMD string `description:"path to server command to run"`
-	} `positional-args:"yes" required:"yes"`
-}
-
-var opts options
-
 func main() {
-	parseOptions()
-}
+	opts, err := parseOptions()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-func parseOptions() {
-	if _, err := flags.Parse(&opts); err != nil {
-		if e, ok := err.(*flags.Error); ok {
-			if e.Type == flags.ErrHelp {
-				os.Exit(0)
-			} else {
-				os.Exit(1)
-			}
-		}
+	registry := newServiceRegistry()
 
-		panic(err)
+	server := rpc.NewServer(opts.SocketPath)
+	err = server.Register(new(Service))
+	if err != nil {
+		log.Panic(err)
+	}
+	registry.add(server)
+
+	registry.setupSignalHandler()
+	registry.start()
+	err = registry.wait()
+
+	if err != nil {
+		log.Error(err)
 	}
 }

@@ -8,7 +8,7 @@ build:
 	mkdir -p build
 
 bin: vendor ${SOURCES} | build
-	gox -os="${XC_OS}" -arch="${XC_ARCH}" -output="build/{{.OS}}/mcserv"
+	gox -os="${XC_OS}" -arch="${XC_ARCH}" -output="build/{{.OS}}/{{.Arch}}/mcserv"
 
 vendor: glide.lock glide.yaml
 	glide i

@@ -48,6 +48,9 @@ flycheck_*.el
 # directory configuration
 .dir-locals.el
 
+# Markdown live preview
+README.html
+
 ### Go ###
 # Binaries for programs and plugins
 *.exe

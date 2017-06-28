@@ -16,6 +16,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// mcserv minecraft server wrapper
 package main
 
 import (
@@ -29,18 +30,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	registry := newServiceRegistry()
+	registry := NewServiceRegistry()
 
 	server := rpc.NewServer(opts.SocketPath)
-	err = server.Register(new(Service))
+	err = server.Register(new(RPC))
 	if err != nil {
 		log.Panic(err)
 	}
-	registry.add(server)
+	registry.Add(server)
 
-	registry.setupSignalHandler()
-	registry.start()
-	err = registry.wait()
+	registry.SetupSignalHandler()
+	registry.Start()
+	err = registry.Wait()
 
 	if err != nil {
 		log.Error(err)

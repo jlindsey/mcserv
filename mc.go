@@ -25,9 +25,29 @@ import (
 // MinecraftService implements the Service interface for the wrapped
 // MC server.
 type MinecraftService struct {
-	InputChan   chan string
-	OutputChan  chan string
+	// Path is the path to the MC server script to run
+	Path string
+
+	// InputChan is a buffered channel of inputs to send to the running server
+	InputChan chan string
+
+	// OuputChan is a buffered channel of server outputs in response to Inputs
+	OutputChan chan string
+
+	// OutputLines is a slice of all server output
 	OutputLines []string
+}
+
+// NewMinecraftService instantiates a new MinecraftService pointer
+func NewMinecraftService(path string) *MinecraftService {
+	mc := MinecraftService{
+		Path:        path,
+		InputChan:   make(chan string, 5),
+		OutputChan:  make(chan string, 5),
+		OutputLines: make([]string, 0),
+	}
+
+	return &mc
 }
 
 func (mc *MinecraftService) String() string {

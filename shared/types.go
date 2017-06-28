@@ -12,8 +12,8 @@ type (
 		OK bool
 	}
 
-	// Service is the exported interface
-	Service interface {
+	// RPC is the exported interface
+	RPC interface {
 		fmt.Stringer
 		Ping(*PingArgs, *Pong) error
 	}

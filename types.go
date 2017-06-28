@@ -23,11 +23,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Service is an instantiation of the shared.Service interface
-type Service int
+// RPC is an instantiation of the shared.RPC interface
+type RPC int
 
 // Ping is a simple command that checks connectivity
-func (s *Service) Ping(args *shared.PingArgs, ret *shared.Pong) error {
+func (s *RPC) Ping(args *shared.PingArgs, ret *shared.Pong) error {
 	log.WithFields(log.Fields{
 		"func": "Ping",
 		"args": args,

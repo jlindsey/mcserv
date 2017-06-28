@@ -28,28 +28,44 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type service interface {
-	fmt.Stringer
+// Service is an interface that defines the minimum methods required to be
+// added to the ServiceRegistry.
+type Service interface {
+	// Start should start the underlying Service. It does not
+	// necessarily have to block, though it is called in a goroutine
+	// by the Registry.
 	Start()
+
+	// Stop should stop the underlying service. It should not block,
+	// but should behave in such a way that Done() reports correctly.
 	Stop()
+
+	// Done returns an error channel that remains open as long as the
+	// Service is running and is pushed either `nil` for a successful
+	// completion, or an `error`.
 	Done() chan error
+
+	fmt.Stringer
 }
 
-type serviceRegistry struct {
-	services []service
+// ServiceRegistry is a container for Service pointers, managing
+// their lifecycles in a centralized interface.
+type ServiceRegistry struct {
+	services []Service
 	finished []bool
 	errors   []error
 	sigChan  chan os.Signal
 	mux      *sync.Mutex
 }
 
-func (r *serviceRegistry) String() string {
+func (r *ServiceRegistry) String() string {
 	return fmt.Sprintf("serviceRegistry{registered: %d}", len(r.services))
 }
 
-func newServiceRegistry() *serviceRegistry {
-	r := serviceRegistry{
-		services: make([]service, 0),
+// NewServiceRegistry returns a pointer to a new ServiceRegistry
+func NewServiceRegistry() *ServiceRegistry {
+	r := ServiceRegistry{
+		services: make([]Service, 0),
 		finished: make([]bool, 0),
 		errors:   make([]error, 0),
 		mux:      &sync.Mutex{},
@@ -58,7 +74,8 @@ func newServiceRegistry() *serviceRegistry {
 	return &r
 }
 
-func (r *serviceRegistry) add(f service) {
+// Add registers a new Service to the Registry.
+func (r *ServiceRegistry) Add(f Service) {
 	log.WithFields(log.Fields{
 		"registry": r,
 		"service":  f,
@@ -66,7 +83,9 @@ func (r *serviceRegistry) add(f service) {
 	r.services = append(r.services, f)
 }
 
-func (r *serviceRegistry) start() {
+// Start iterates through the registered Services and calls their Start()
+// methods in a goroutine.
+func (r *ServiceRegistry) Start() {
 	logger := log.WithField("registry", r)
 	logger.Debug("Starting services")
 
@@ -77,7 +96,8 @@ func (r *serviceRegistry) start() {
 	}
 }
 
-func (r *serviceRegistry) stop() {
+// Stop iterates through the registered Services and calls their Stop() methods.
+func (r *ServiceRegistry) Stop() {
 	logger := log.WithField("registry", r)
 	logger.Debug("Stopping services")
 
@@ -88,7 +108,9 @@ func (r *serviceRegistry) stop() {
 	}
 }
 
-func (r *serviceRegistry) setupSignalHandler() {
+// SetupSignalHandler registers a handler for SIGINT and a listener
+// on the resulting channel to cleanly stop registered Services.
+func (r *ServiceRegistry) SetupSignalHandler() {
 	logger := log.WithField("registry", r)
 	logger.Debug("Setting up signal handler")
 
@@ -98,11 +120,14 @@ func (r *serviceRegistry) setupSignalHandler() {
 	go func() {
 		<-r.sigChan
 		logger.Debug("Caught SIGINT")
-		r.stop()
+		r.Stop()
 	}()
 }
 
-func (r *serviceRegistry) wait() error {
+// Wait will wait until the underlying Services' Done() methods
+// indicate exit. If any of them return an error, this method
+// will pass them through.
+func (r *ServiceRegistry) Wait() error {
 	for i := range r.services {
 		go r.waitForFinisher(r.services[i])
 	}
@@ -122,7 +147,7 @@ func (r *serviceRegistry) wait() error {
 	return nil
 }
 
-func (r *serviceRegistry) waitForFinisher(f service) {
+func (r *ServiceRegistry) waitForFinisher(f Service) {
 	logger := log.WithFields(log.Fields{
 		"registry": r,
 		"service":  f,
@@ -134,6 +159,9 @@ func (r *serviceRegistry) waitForFinisher(f service) {
 	if err != nil {
 		logger.Error(err)
 		r.errors = append(r.errors, err)
+
+		logger.Error("Error encountered. Stopping all services")
+		r.Stop()
 	}
 	r.finished = append(r.finished, true)
 	r.mux.Unlock()
